@@ -12,7 +12,7 @@ try
     % --- REFERENCE (vol == 1)
     refname = make_file(in{1}{1}, subtmpdir, 'ref');
     ref     = spm_vol(refname);
-    ref.mat = in{1}.mat;
+    ref.mat = in{1}{1}.mat;
 
     % --- MOVING (vol > 1)
     for c=1:numel(in)
@@ -37,9 +37,25 @@ ok = mkdir(dirname);
 if ~ok, error('Could not create temporary directory'); end
 % =========================================================================
 function fname = make_file(in, dir, prefix)
-fname   = fillfile(dir, [prefix '.nii']);
+fname   = fullfile(dir, [prefix '.nii']);
 nii     = nifti;
 nii.dat = file_array(fname, in.dim, class2type(in.dat));
 nii.mat = in.mat;
 create(nii);
 nii.dat(:,:,:) = in.dat(:,:,:);
+% =========================================================================
+function dt = class2type(a)
+if isa(a, 'file_array')
+    dt = a.dtype;
+else
+    dt = class(a);
+    switch lower(dt)
+        case 'single'
+            dt = 'float32';
+        case 'double'
+            dt = 'float64';
+        case 'logical'
+            dt = 'binary';
+        % otherwise: MATLAB and NIFTI types are consistant
+    end
+end
