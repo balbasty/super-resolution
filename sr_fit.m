@@ -40,6 +40,10 @@ function [out,in] = sr_fit(in,opt)
 % -------------------------------------------------------------------------
 
 % -------------------------------------------------------------------------
+% Add subdirectory to path
+addpath(fullfile(fileparts(which('sr_fit')), 'sub'));
+
+% -------------------------------------------------------------------------
 % Options
 if nargin < 2, opt = struct; end
 opt = sr_opt_defaults(opt);
@@ -273,29 +277,54 @@ sr_threads(threads0.spm,    'spm');
 sr_threads(threads0.matlab, 'matlab');
 
 % =========================================================================
-
+function [alldim,allmat] = get_orientation_matrices(in)
+num = zeros(1,numel(in));
+for c=1:numel(in), num(c) = numel(in{c}); end
+allmat = zeros(4,4,prod(num));
+alldim = zeros(3,prod(num));
+i = 0;
+for c=1:numel(in)
+    for n=1:numel(in{c})
+        i = i + 1;
+        allmat(:,:,i) = in{c}{n}.mat;
+        alldim(:,i)   = in{c}{n}.dim(:);
+    end
+end
+% =========================================================================
 function [dim,mat,vs] = compute_mean_space(in,opt)
-if opt.fov == 0
-    % Estimate a mean orientation matrix
-    if opt.verbose > 0, fprintf('Estimate mean space\n'); end
-    num = zeros(1,numel(in));
-    for c=1:numel(in), num(c) = numel(in{c}); end
-    allmat = zeros(4,4,prod(num));
-    alldim = zeros(3,prod(num));
-    i = 0;
-    for c=1:numel(in)
-        for n=1:numel(in{c})
-            i = i + 1;
-            allmat(:,:,i) = in{c}{n}.mat;
-            alldim(:,i)   = in{c}{n}.dim(:);
+
+[alldim,allmat] = get_orientation_matrices(in);
+
+if ~isfinite(opt.fov)
+    allsame = true;
+    for i=1:3
+        allsame = allsame && (numel(unique(alldim(i,:))) == 1);
+        if ~allsame, break; end
+    end
+    for i=1:4
+        for j=1:4
+            allsame = allsame && (numel(unique(allmat(i,j,:))) == 1);
+        if ~allsame, break; end
         end
     end
+    if allsame
+        fov = 1;
+    else
+        fov = 0;
+    end
+else
+    fov = opt.fov;
+end
+
+if fov == 0
+    % Estimate a mean orientation matrix
+    if opt.verbose > 0, fprintf('Estimate mean space\n'); end
     [dim,mat,vs] = sr_mean_space(allmat, alldim, opt.vs);
 else
     % Use orientation matrix of the n-th volume
-    mat = in{opt.fov}.mat;
-    dim = in{opt.fov}.dim;
-    vs0 = sqrt(sum(mat(1:3,1:3).^2,4));
+    mat = in{opt.fov}{1}.mat;
+    dim = in{opt.fov}{1}.dim;
+    vs0 = sqrt(sum(mat(1:3,1:3).^2));
     vs  = vs0;
     vs(isfinite(opt.vs)) = opt.vs(isfinite(opt.vs));
     scl  = vs0(:)./vs(:);

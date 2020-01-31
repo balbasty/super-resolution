@@ -9,13 +9,21 @@ spm_diffeo('boundary', 1);
 
 switch lower(opt.mode(1))
     case 'd' % Denoise
-        switch lower(mode)
-            case 'a'
-                out = proj_A_denoise(in, odim, xmat, ymat);
-            case 'at'
-                out = proj_At_denoise(in, odim, xmat, ymat);
-            case'ata'
-                out = proj_AtA_denoise(in, odim, xmat, ymat);
+        idim = [size(in) 1];
+        idim = idim(1:3);
+        if all(all(xmat == ymat)) && all(odim == idim)
+            % Projection = identity
+            out = in;
+        else
+            % Need to use pull/push
+            switch lower(mode)
+                case 'a'
+                    out = proj_A_denoise(in, odim, xmat, ymat);
+                case 'at'
+                    out = proj_At_denoise(in, odim, xmat, ymat);
+                case'ata'
+                    out = proj_AtA_denoise(in, odim, xmat, ymat);
+            end
         end
     case 's' % Super-resolution
         switch lower(mode)
