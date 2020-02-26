@@ -15,7 +15,7 @@ o = setdefault(o, 'tolerance',        1E-4);             % Gain threshold for ea
 o = setdefault(o, 'out.folder',       '.');              % Output folder [same as input if empty]
 o = setdefault(o, 'out.mem',          'map');            % map/load output volumes
 o = setdefault(o, 'reg.mode',         1);                % Regularisation mode (0=None|1=L1|2=L2)
-o = setdefault(o, 'reg.value',        1E2);              % Regularisation value (L2: 1/sig^2, L1: 1/b^2)
+o = setdefault(o, 'reg.value',        1E4);              % Regularisation value (L2: 1/sig^2, L1: 1/b^2)
 o = setdefault(o, 'reg.smo' ,         1E-3);             % RLS smoother
 o = setdefault(o, 'vs',               NaN);              % Reconstruction voxel size (Nan=from input)
 o = setdefault(o, 'fov',              0);                % Field of view (0=bounding box|n=index of input volume)
