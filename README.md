@@ -80,7 +80,7 @@ The outputs are:
 Several options are available, as fields of the `opt` structure:
 | Name | Range | Default | Description |
 |------|-------|---------|-------------|
-| `mode` | 'denoise' / 'superres' | 'denoise' | 
+| `mode` | 'denoise' / 'superres' | 'denoise' | |
 | `log`  | bool | false | Solve for-log images (makes the prior scale-indepdendent) |
 | `itermax` | int > 0 | 16 | Maximum number of iterations |
 | `tolerance` | float > 0 | 1E-3 | Gain threshold for early stopping |
@@ -91,27 +91,27 @@ Several options are available, as fields of the `opt` structure:
 | `fov` | int >= 0 | 0 | Target field of view. If 0, an average orientation matrix is computed from the input matrices. If N>0, the orientation matrix of the N-th input image is used. |
 | `coreg.do` | bool | true | Start by coregistering all input volumes. |
 | `coreg.fwhm` | float > 0 | [21 14 7] | Series of FWHM used to smooth the joint histogram |
-| `threads` | int >= 0 / 'matlab' / 'automatic' | Number of threads used by both Matlab and SPM: 'matlab' = Matlab's current settings / 'automatic = Matlab's automatic setting |
+| `threads` | int >= 0 / 'matlab' / 'automatic' |  'matlab' | Number of threads used by both Matlab and SPM: 'matlab' = Matlab's current settings / 'automatic = Matlab's automatic setting |
 | `verbose` | int >= 0 | 1 | Verbosity level: 0=quiet / 1=print / 2=plot |
 | `out.mem` | 'map' / 'load' | 'map' | Memory map output data (slower but saves RAM) |
 | `out.folder` | char | '.' | Output folder. |
-| `slice.dir` | 'thickest' / 'all' | Which directions are 'slice-selection' directions? |
+| `slice.dir` | 'thickest' / 'all' | 'thickest' | Which directions are 'slice-selection' directions? |
 | `slice.gap` | float >= 0 | 1/3 | Gap between slices in the slice direction(s) |
-| `armijo` | float >= 0 | Series of damping factors used for Gauss-Newton . |
+| `armijo` | float >= 0 | [2 1] | Series of damping factors used for Gauss-Newton . |
 
 ## References
 
 The use of Multi-Channel Total-Variation as a prior for MR 
-super-resolution sas been described in:
+super-resolution has been described in:
 
-**MRI Super-Resolution using Multi-Channel Total Variation.**
-[Mikael Brudfors](brudfors@gmail.com), [Yaël Balbastre](y.balbastre@ucl.ac.uk), [Parashkev Nachev](p.nachev@ucl.ac.uk), [John Ashburner](j.ashburner@ucl.ac.uk)
-MIUA 2019
+- **MRI Super-Resolution using Multi-Channel Total Variation.**  
+[Mikael Brudfors](brudfors@gmail.com), [Yaël Balbastre](y.balbastre@ucl.ac.uk), [Parashkev Nachev](p.nachev@ucl.ac.uk), [John Ashburner](j.ashburner@ucl.ac.uk)  
+MIUA 2019  
 https://arxiv.org/abs/1810.03422
 
-**A Tool for Super-Resolving Multimodal Clinical MRI.**
-[Mikael Brudfors](brudfors@gmail.com), [Yaël Balbastre](y.balbastre@ucl.ac.uk), [Parashkev Nachev](p.nachev@ucl.ac.uk), [John Ashburner](j.ashburner@ucl.ac.uk)
-Preprint
+- **A Tool for Super-Resolving Multimodal Clinical MRI.**  
+[Mikael Brudfors](brudfors@gmail.com), [Yaël Balbastre](y.balbastre@ucl.ac.uk), [Parashkev Nachev](p.nachev@ucl.ac.uk), [John Ashburner](j.ashburner@ucl.ac.uk)  
+Preprint  
 https://arxiv.org/abs/1909.01140
 
 The reweighted least squares scheme used in this implementation will be 
