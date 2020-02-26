@@ -14,7 +14,7 @@ function [nspm,nmatlab] = sr_threads(n, which)
 %   . 'matlab':         only sets the setting for Matlab
 %   . 'both':           sets the setting for both [default]
 %
-% FORMAT [nspm,nmatlab] = smx_threads
+% FORMAT [nspm,nmatlab] = sr_threads
 % Return the actual number of threads used.
 
 if nargin < 2, which = 'both'; end

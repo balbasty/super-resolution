@@ -1,34 +1,35 @@
-function dy = sr_solve_l1_relax(H, g, w, lam, vs, opt)
+function dy = sr_solve_l1_relax(H, g, w, lam, vs, opt, dy)
 % Relaxation solver for L1 spatial regularisation.
 %
-% FORMAT d = mpm.l1.solver.cg(H, g, w, lam, vs, [opt])
+% FORMAT d = sr_solve_l1_relax(H, g, w, lam, vs, [opt], [d0])
 % H    - {nx ny nz nf(nf+1)/2} - Field of (sparse) Hessian matrices
 % g    - {nx ny nz nf}         - Field of gradients
 % w    - {nx ny nz}            - Weights (reweighted Gaussian approximation)
 % lam  - {nf}                  - Regularisation for each channel (1/b^2)
 % vs   - {3}                   - Voxel size
 % opt  - {struct}              - Structure of options with fields:
-%      . nbiter                - Number of CG iterations [10]
-%      . tolerance             - Early stopping tolerance [1E-3]
-%      . verbose               - Print progress [true]
+%      . nbiter                - Number of CG iterations    [10]
+%      . tolerance             - Early stopping tolerance   [1E-3]
+%      . verbose               - Print progress             [true]
+% d0   - {nx ny nz nf}         - Step: initial guess
 % d    - {nx ny nz nf}         - Step: d = H\g
 
 
 % Neumann boundary conditon
 spm_field('boundary', 1);
-fmg = [2 2];
-lam = lam(:)';
+fmg  = [2 2];
+lam  = lam(:)';
+wbnd = double(max(w(:)));
 
-% Initial guess using a majoriser of the true Hessian
-wbnd   = double(max(w(:)));
-lambnd = lam * wbnd;
-dy     = zeros(size(g), 'single');
-for k=1:size(g,4)
-    dy(:,:,:,k) = spm_field(H(:,:,:,k), g(:,:,:,k), [vs 0 1 0 fmg], lambnd(k));
-end
 if all(w(:)==1)
-    % No need to relax
+    % We can use FMG
+    lambnd = lam * wbnd;
+    for k=1:size(g,4)
+        dy(:,:,:,k) = spm_field(H(:,:,:,k), g(:,:,:,k), [vs 0 1 0 fmg], lambnd(k));
+    end
     return
+elseif nargin < 7 || isempty(dy)
+    dy = zeros(size(g), 'single');
 end
 
 % Smoothing term: use diagonal of membrane kernel

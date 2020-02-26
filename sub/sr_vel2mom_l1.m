@@ -15,7 +15,7 @@ function [y,Dy] = sr_vel2mom_l1(y, prec, vs, w)
 % Kf   - {nx ny nz 3 2}        - Forward differential operator 
 
 if nargout > 1
-    Dy  = sqrt(prec) * sr_imgrad(y, vs);
+    Dy  = sr_imgrad(y, vs);
 end
 
 spm_field('boundary', 1);

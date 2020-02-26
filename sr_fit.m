@@ -32,12 +32,28 @@ function [out,in] = sr_fit(in,opt)
 %       . All inputs must have the same lattice and are assumed to have the
 %         same orientation matrix. This orientation matrix can be specified
 %         in the option structure.
+%__________________________________________________________________________
+%
+% The use of Multi-Channel Total Variation in the context of MRI
+% super-resolution is described in:
+%
+% . "MRI Super-Resolution using Multi-Channel Total Variation"
+%   Brudfors, M., Balbastre, Y., Nachev, P., and Ashburner, J.
+%   MIUA 2018
+%   https://arxiv.org/abs/1810.03422
+%
+% . "A Tool for Super-Resolving Multimodal Clinical MRI"
+%   Brudfors, M., Balbastre, Y., Nachev, P., and Ashburner, J.
+%   Preprint
+%   https://arxiv.org/abs/1909.01140
+%__________________________________________________________________________
 
 % -------------------------------------------------------------------------
 %
 %                           Initialisation
 % 
 % -------------------------------------------------------------------------
+
 
 % -------------------------------------------------------------------------
 % Add subdirectory to path
@@ -47,6 +63,25 @@ addpath(fullfile(fileparts(which('sr_fit')), 'sub'));
 % Options
 if nargin < 2, opt = struct; end
 opt = sr_opt_defaults(opt);
+
+% -------------------------------------------------------------------------
+% GUI
+if opt.verbose > 1
+    spm_figure('GetWin','Interactive');
+end
+if nargin == 0 || isempty(in)
+    Nc   = spm_input('Number of contrasts',1,'n','',1);
+    opt.mode = find(strcmpi(["denoise";"superres"], opt.mode));
+    opt.mode = char(spm_input('Mode',2,'b','denoising|super-resolution',{'denoise';'superres'},opt.mode));
+    if strcmpi(opt.mode, 'superres')
+        opt.vs = spm_input('Voxel size',3,'r',opt.vs,3);
+    end
+    in = cell(1,Nc);
+    for c=1:Nc
+        msg   = sprintf('Select files for contrast %d...',c);
+        in{c} = num2cell(spm_select(Inf, 'image', msg), 2)';
+    end
+end
 
 % -------------------------------------------------------------------------
 % Multithread SPM
@@ -90,20 +125,6 @@ out = sr_out_format(dim, mat, in, opt);
 % . dim   - lattice dimensions
 % . lam   - regularisation value
 % . rls   - image of weights (RLS)
-% . uncty - uncertainty images
-
-% -------------------------------------------------------------------------
-% Initialise uncertainty
-if opt.reg.uncertainty == 0
-    if opt.verbose > 0, fprintf('Initialise uncertainty: '); end
-    for c=1:numel(in)
-        H1 = sr_hessian(c, in{c}, out, opt);
-        H2 = out.lam(c)*sr_diag_kernel(vs);
-        out.uncty(:,:,:,c) = 1./(H1 + H2);
-    end
-    fprintf('\n');
-    clear H1 H2
-end
 
 % -------------------------------------------------------------------------
 %
@@ -111,15 +132,16 @@ end
 % 
 % -------------------------------------------------------------------------
 
-if opt.verbose > 0, fprintf('Full nonlinear fit\n'); end
 if opt.verbose > 1, sr_plot_progress(in, out,[],opt); end
 ll  = [];
 K   = size(out.dat, 4);
-scl = sr_diag_kernel(vs); % Diag of convolution kernel (D'D)
+vol = prod(vs);
 for it=1:opt.itermax
 
     if opt.verbose > 0, fprintf('Iteration %i\n', it); end
 
+    if it <= numel(opt.armijo), armijo = 1/opt.armijo(it); end
+    
     % ---------------------------------------------------------------------
     % Update maps
     % ---------------------------------------------------------------------
@@ -127,7 +149,6 @@ for it=1:opt.itermax
     H   = zeros([dim K], 'single');            % Hessian
     llx = 0;                                   % Log-likelihood: data term
     lly = 0;                                   % Log-likelihood: prior term
-    llu = 0;                                   % Log-likelihod: uncertainty
     lltv = 0;                                  % True MTV term
     
     % ---------------------------------------------------------------------
@@ -142,8 +163,7 @@ for it=1:opt.itermax
 
         % - Add to full gradient
         g(:,:,:,c) = g(:,:,:,c) + g1; clear g1
-        H(:,:,:,c) = H(:,:,:,c) + H1;
-        clear H1
+        H(:,:,:,c) = H(:,:,:,c) + H1; clear H1
 
     end
     if opt.verbose > 0, fprintf('\n'); end
@@ -157,28 +177,22 @@ for it=1:opt.itermax
             % -------------------------------------------------------------
             % L1 regularisation
             case 1
-                wnew = 0;
                 w    = single(out.rls());
-                lly  = lly + 0.5*sum(w(:),'double');
+                lly  = 0.5 * vol * sum(w(:), 'double');
                 w    = 1./w;
+                wnew = 0;
                 for k=1:K
                     if opt.verbose > 0, fprintf('.'); end
                     y          = single(out.dat(:,:,:,k));
                     [Ly,Dy]    = sr_vel2mom_l1(y, out.lam(k), vs, w);
-                    Dy         = sum(sum(Dy.^2,5),4);
+                    Dy         = out.lam(k) * sum(sum(Dy.^2,5),4);
                     wnew       = wnew + Dy;
-                    g(:,:,:,k) = g(:,:,:,k) + Ly;
-                    lly        = lly + 0.5*sum(y(:).*Ly(:), 'double');
+                    lly        = lly + 0.5 * vol * sum(y(:).*Ly(:), 'double');
+                    g(:,:,:,k) = g(:,:,:,k) + vol * Ly;
                     clear Ly
                 end
-                lltv = lltv + sum(sqrt(wnew(:)), 'double');
-                if opt.reg.uncertainty == 0
-                    u    = single(out.uncty());
-                    u    = bsxfun(@times, u, reshape(out.lam*scl, 1,1,1,[]));
-                    wnew = sqrt(wnew + sum(u, 4));
-                else
-                    wnew = sqrt(wnew + opt.reg.uncertainty);
-                end
+                lltv = vol * sum(sqrt(wnew(:)), 'double');
+                wnew = sqrt(wnew + opt.reg.smo);
                 out.rls(:,:,:) = wnew; clear wnew
             
             % -------------------------------------------------------------
@@ -188,8 +202,8 @@ for it=1:opt.itermax
                     if opt.verbose > 0, fprintf('.'); end
                     y          = single(out.dat(:,:,:,k));
                     Ly         = sr_vel2mom_l2(y, out.lam(k), vs);
-                    g(:,:,:,k) = g(:,:,:,k) + Ly;
-                    lly        = lly + 0.5*sum(y(:).*Ly(:), 'double');
+                    lly        = lly + 0.5 * vol * sum(y(:).*Ly(:), 'double');
+                    g(:,:,:,k) = g(:,:,:,k) + vol * Ly;
                     clear y Ly
                 end
         end
@@ -214,22 +228,33 @@ for it=1:opt.itermax
         % -----------------------------------------------------------------
         % L1 regularisation
         case 1
-            dy = opt.solver.fun(H, g, w, out.lam, vs, opt.solver);
-            if opt.reg.uncertainty == 0
-                u = sr_uncertainty_l1(H, out.lam, vs, w);
-                out.uncty(:,:,:,:) = u;
-                llu = llu - 0.5*sum(log(u(:)), 'double');
-                llu = llu + 0.5*sum(H(:).*u(:), 'double');
-                u   = bsxfun(@times, u, reshape(scl*out.lam, 1,1,1,[]));
-                u   = bsxfun(@times, u, w);
-                llu = llu + 0.5*sum(H(:).*u(:), 'double');
-                clear u
+            % - Initialise using a majoriser of the true Hessian and the 
+            %   full multigrid solver.
+            %   It captures low frequencies and provides a robust starting
+            %   estimate for the conjugate gradient solver.
+            dy = sr_solve_l1_fmg(H, g, w, vol * out.lam, vs);
+            if any(w(:)~=1)
+            optsolver           = struct;
+            optsolver.verbose   = 1;
+            optsolver.precond   = false;
+            optsolver.tolerance = 0.1;
+            % - Start with conjugate gradient.
+            %   It is fast and quite good when things are still smooth.
+            %   However, it breaks when things become crisper.
+            optsolver.nbiter = 100;
+            optsolver.tolerance = 0.01;
+            dy = sr_solve_l1_cg(H, g, w, vol * out.lam, vs, optsolver, dy);
+            % - Refine with relax.
+            %   It is slow to get the smooth part correct but very
+            %   efficient with crisp edges.
+            optsolver.nbiter = 20;
+            optsolver.tolerance = 0.01;
+            dy = sr_solve_l1_relax(H, g, w, vol * out.lam, vs, optsolver, dy);
             end
-            
         % -----------------------------------------------------------------
         % L2 regularisation
         case 2
-            dy = sr_solve_l2(H, g, out.lam, vs);
+            dy = sr_solve_l2(H, g, vol * out.lam, vs);
     end
     clear H g w
     
@@ -237,26 +262,25 @@ for it=1:opt.itermax
     % Update
     if opt.verbose > 0, fprintf('Update\n'); end
     for k=1:K
-        out.dat(:,:,:,k) = out.dat(:,:,:,k) - 0.9*dy(:,:,:,k);
+        out.dat(:,:,:,k) = out.dat(:,:,:,k) - armijo * dy(:,:,:,k);
     end
     clear dy
-
-    if it > 1
+    
     % ---------------------------------------------------------------------
     % Log-likelihood + Gain
     % ---------------------------------------------------------------------
-    ll = [ll, [llx+lly+llu;llx;lly;llu;lltv]];
+    ll = [ll, [llx+lly;llx;lly;lltv]];
     if size(ll,2) > 1
         gain = abs((ll(1,end-1) - ll(1,end)) / (max(ll(1,:)) - ll(1,end-1)));
     else
         gain = Inf;
     end
-
+    
     % ---------------------------------------------------------------------
     % Plot
     % ---------------------------------------------------------------------
     if opt.verbose > 0, fprintf('%s\n', repmat('-',[1 80])); end
-    if opt.verbose > 0, fprintf('ll = %7.3g | llx = %7.3g | lly = %7.3g | gain = %7.3g\n', ll(end), llx, lly, gain); end
+    if opt.verbose > 0, fprintf('ll = %7.3g | llx = %7.3g | lly = %7.3g | gain = %7.3g\n', llx+lly, llx, lly, gain); end
     if opt.verbose > 0, fprintf('%s\n', repmat('-',[1 80])); end
 
     % ---------------------------------------------------------------------
@@ -265,7 +289,6 @@ for it=1:opt.itermax
     if abs(gain) < opt.tolerance
         if opt.verbose > 1, sr_plot_progress(in, out, ll, opt); end
         break
-    end
     end
     if opt.verbose > 1, sr_plot_progress(in, out, ll, opt); end
 
@@ -280,8 +303,8 @@ sr_threads(threads0.matlab, 'matlab');
 function [alldim,allmat] = get_orientation_matrices(in)
 num = zeros(1,numel(in));
 for c=1:numel(in), num(c) = numel(in{c}); end
-allmat = zeros(4,4,prod(num));
-alldim = zeros(3,prod(num));
+allmat = zeros(4,4,sum(num));
+alldim = zeros(3,sum(num));
 i = 0;
 for c=1:numel(in)
     for n=1:numel(in{c})
@@ -324,10 +347,11 @@ else
     % Use orientation matrix of the n-th volume
     mat = in{opt.fov}{1}.mat;
     dim = in{opt.fov}{1}.dim;
-    vs0 = sqrt(sum(mat(1:3,1:3).^2));
-    vs  = vs0;
-    vs(isfinite(opt.vs)) = opt.vs(isfinite(opt.vs));
+    vs0 = opt.vs;
+    vs  = sqrt(sum(mat(1:3,1:3).^2));
+    vs0(~isfinite(vs0)) = vs(~isfinite(vs0));
     scl  = vs0(:)./vs(:);
     mat = mat * diag([scl(:); 1]);
-    dim = ceil(dim(:).*scl(:))';
+    dim = ceil(dim(:)./scl(:))';
+    vs  = sqrt(sum(mat(1:3,1:3).^2));
 end

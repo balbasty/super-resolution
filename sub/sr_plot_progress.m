@@ -21,12 +21,19 @@ else
 end
 i = 1;
 
+z = ceil(size(out.dat,3)/2);
+
 % -------------------------------------------------------------------------
 % Observed
 for c=1:numel(in)
     subplot(nrow,ncol,i);
-    z = ceil(size(in{c}{1}.dat,3)/2);
-    img = in{c}{1}.dat(:,:,z);
+    dmu = [size(out.dat) 1];
+    dmu = dmu(1:3);
+    y   = warps_affine(dmu, in{c}{1}.mat\out.mat);
+    y   = y(:,:,z,:);
+    img = spm_diffeo('bsplinc', single(in{c}{1}.dat()), [0 0 0  0 0 0]);
+    img = spm_diffeo('bsplins', img, y, [0 0 0  0 0 0]);
+    % img = in{c}{1}.dat(:,:,z);
     imagesc(img);
     colormap('gray');
     colorbar;
@@ -43,7 +50,7 @@ if ~isempty(ll)
     hold on
     colors = [0 0 0; hsv(size(ll,1)-1)];
     lines  = {2 1 1 1 1};
-    titles = {'L' 'X' 'Y' 'U' 'TV'};
+    titles = {'Total Energy' 'Data' 'Bound' 'TV'};
     for k=1:size(ll,1)
         p = plot(ll(k,:));
         p.Color = colors(k,:);
@@ -56,8 +63,6 @@ if ~isempty(ll)
     legend(titles{:});
 end
 i = i + 1;
-
-z = ceil(size(out.dat,3)/2);
 
 % -------------------------------------------------------------------------
 % Recon
@@ -102,3 +107,13 @@ if isfield(out, 'uncty')
 end
 
 drawnow
+
+% === HELPERS =============================================================
+function psi = warps_affine(lat, mat)
+id  = warps_identity(lat);
+psi = reshape(reshape(id,[prod(lat) 3])*mat(1:3,1:3)' + mat(1:3,4)',[lat 3]);
+if lat(3) == 1, psi(:,:,:,3) = 1; end
+% -------------------------------------------------------------------------
+function id = warps_identity(d)
+id = zeros([d(:)' 3],'single');
+[id(:,:,:,1),id(:,:,:,2),id(:,:,:,3)] = ndgrid(single(1:d(1)),single(1:d(2)),single(1:d(3)));

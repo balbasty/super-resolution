@@ -1,4 +1,4 @@
-function M = coreg(fref,varargin)
+function M = sr_coreg(fref,varargin)
 % Co-register a set of moving volumes with a fixed reference.
 %
 %   This function wraps `spm_coreg` and adds a few functionalities. It 
@@ -8,7 +8,7 @@ function M = coreg(fref,varargin)
 %   arrays are not handled). However, orientation matrices can be
 %   overriden.
 %
-% FORMAT T = utils.coreg(ref, mov1, mov2, ..., [fwhm])
+% FORMAT T = sr_coreg(ref, mov1, mov2, ..., [fwhm])
 % ref  - Filename or {Filename Matrix} of reference image
 % mov  - Filename or {Filename Matrix} of moving image
 % fwhm - Vector of decreasing FWHM for histogram smoothing [21 14 7]

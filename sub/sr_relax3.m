@@ -28,9 +28,10 @@ function [x,info] = sr_relax3(A,b,iE,x,opt)
 % OUTPUT
 % ------
 % x       - Solution to the linear system
-% info    - Structure of info about the process, with fields
+% info    - Structure with fields:
 %           . nbiter - Effective number of iterations
-%           . rr     - Normalised residuals: sum((A*x-b).^2)/sum(b.^2)
+%           . rr     - Root mean squared residuals (per iteration)
+%           . time   - Time (per iteration)
 %
 % NOTA BENE
 % ---------
@@ -65,29 +66,25 @@ if ~isfield(opt, 'band'),      opt.band      = 'checker'; end
 if ~isfield(opt, 'verbose'),   opt.verbose   = true;      end
 if ~isfield(opt, 'sumtype'),   opt.sumtype   = 'double';  end
 if isnumeric(opt.band)
-    opt.band = sr_padarray(opt.band(:)', [0 3-numel(opt.band)], 'replicate', 'post');
+    opt.band = sr_pad(opt.band(:)', [0 3-numel(opt.band)], 'replicate', 'post');
 end
 
+sr_plot_interactive('Init', 'Relaxation', 'Residuals', 'Iteration');
 
 % -------------------------------------------------------------------------
 % Initial residuals
 % -------------------------------------------------------------------------
 dim = [size(b) 1];
 dim = dim(1:3);
-bb  = sum(b(:).^2, opt.sumtype);
+bb  = sqrt(sum(b(:).^2, opt.sumtype));
 r   = b - A(x);
-rr  = sum(r(:).^2, opt.sumtype);
+rr  = sqrt(sum(r(:).^2, opt.sumtype));
 rr  = rr/bb;
 if opt.verbose
     fprintf('Relax: ');
-    if opt.verbose > 1, fprintf('(%g)',rr); end
 end
-if rr < opt.tolerance
-    if opt.verbose, fprintf('o'); end
-    info.nbiter = 0;
-    info.rr     = rr;
-    return
-end
+
+sr_plot_interactive('Set', 0, rr);
 
 % -------------------------------------------------------------------------
 % Checkerboard
@@ -105,6 +102,8 @@ end
 % Main loop
 % -------------------------------------------------------------------------
 b = reshape(b, [], size(b,4));
+start = tic;
+time  = [];
 for it=1:opt.nbiter
 
     if checker
@@ -114,15 +113,22 @@ for it=1:opt.nbiter
         for j=[0 1]
             sub = (checkerboard == j);
 
+            if false
             % Compute residuals
             r = reshape(r, [], size(r,4));
             r(sub,:) = b(sub,:) - A(x,sub);
             r = reshape(r, [dim size(r,2)]);
+            end
 
             % Solve easy (smoothed) inverse problem
             x = reshape(x, [], size(x,4));
             x(sub,:) = x(sub,:) + iE(r,sub);
             x = reshape(x, [dim size(x,2)]);
+            
+            if true
+            % Compute residuals
+            r = reshape(b, [dim size(b,2)]) - A(x);
+            end
         end
 
     else
@@ -156,22 +162,27 @@ for it=1:opt.nbiter
     end
 
     % Compute residuals
-    rr0 = rr;
-    rr  = sum(r(:).^2, 'double');
-    rr  = rr/bb;
-    if rr < opt.tolerance
+    rr0  = rr(end);
+    rr1  = sqrt(sum(r(:).^2, opt.sumtype));
+    rr1  = rr1/bb;
+    sr_plot_interactive('Set', it, rr1);
+    rr   = [rr rr1];
+    time = [time toc(start)];
+    if rr1 < opt.tolerance
         if opt.verbose, fprintf('o'); end
-        if opt.verbose > 1, fprintf('(%g)',rr); end
         break
+    elseif rr1 > rr0
+        if opt.verbose, fprintf('x'); end
+        break;
     elseif opt.verbose
-        if rr > rr0, fprintf('x');
-        else,        fprintf('.'); end
-        if opt.verbose > 1, fprintf('(%g)',rr); end
+        fprintf('.');
     end
 end
 if opt.verbose
     fprintf('\n');
 end
 
+sr_plot_interactive('Clear');
 info.nbiter = it;
 info.rr     = rr;
+info.time   = time;

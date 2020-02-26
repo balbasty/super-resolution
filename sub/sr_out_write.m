@@ -22,27 +22,21 @@ if strcmpi(opt.out.mem, 'load')
         end
         if c == 1, dir1 = dir; end
         % Recon
-        nii     = nifti;
-        nii.dat = file_array(fullfile(dir, sprintf(['sr_' '%0' ndig 'd' base '.nii'], c)), out.dim, 'float32');
-        nii.mat = out.mat;
+        nii      = nifti;
+        nii.dat  = file_array(fullfile(dir, sprintf(['sr_' '%0' ndig 'd' base '.nii'], c)), out.dim, 'float32');
+        nii.mat  = out.mat;
+        nii.mat0 = out.mat;
         create(nii);
         nii.dat(:,:,:) = out.dat(:,:,:,c);
-        % Uncertainty
-        if opt.reg.uncertainty == 0
-            nii     = nifti;
-            nii.dat = file_array(fullfile(dir, sprintf(['u_sr_' '%0' ndig 'd' base '.nii'], c)), out.dim, 'float32');
-            nii.mat = out.mat;
-            create(nii);
-            nii.dat(:,:,:) = out.uncty(:,:,:,c);
-        end
     end
     
     % Weights
     if opt.reg.mode == 1
-        nii     = nifti;
-        nii.dat = file_array(fullfile(dir1, 'rls.nii'), out.dim, 'float32');
-        nii.mat = out.mat;
+        nii      = nifti;
+        nii.dat  = file_array(fullfile(dir1, 'rls.nii'), out.dim, 'float32');
+        nii.mat  = out.mat;
+        nii.mat0 = out.mat;
         create(nii);
-        out.rls = nii.dat;
+        out.rls  = nii.dat;
     end
 end
