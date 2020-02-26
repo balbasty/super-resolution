@@ -10,10 +10,10 @@ repeats of a same contrast.
 ## Dependencies
 
 This code is written in Matlab and depends on the **development branch**
-of [SPM12](https://www.fil.ion.ucl.ac.uk/spm/) software, which 
+of the [SPM12](https://www.fil.ion.ucl.ac.uk/spm/) software, which 
 should be on your Matlab path. Access to this branch is usually 
 restricted to people who work at the 
-[FIL](https://www.fil.ion.ucl.ac.uk/spm/local/)). If you don't but would 
+[FIL](https://www.fil.ion.ucl.ac.uk/spm/local/). If you don't but would 
 like to try this software, please send us an email to get a copy.
 
 For increased speed, it is advised to recompile SPM with OpenMP 
@@ -51,29 +51,29 @@ If more flexibility is required, `sr_fit` can be used as a function:
 >> [out,in] = sr_fit(dat, opt);
 ```
 The input `dat` can be either:
-    . A cell of cells of nifti filenames. The outer loop corresponds to 
-      contrasts and the inner loop corresponds to repeats of a given 
-      contrast.
-    . A 4D numeric or file array. This works in the denoising case only, 
-      when all inputs are registered and reslices to the same lattice.
-    . Empty. In this case, files can be selected through the GUI.
+- A cell of cells of nifti filenames. The outer loop corresponds to 
+  contrasts and the inner loop corresponds to repeats of a given 
+  contrast.
+- A 4D numeric or file array. This works in the denoising case only, 
+  when all inputs are registered and reslices to the same lattice.
+- Empty. In this case, files can be selected through the GUI.
 
 The outputs are:
-    . `out` is a structure with fields:
-      . `dat` - a file array containing the denoised images
-      . `rls` - a file array containing the L1 weights
-      . `mat` - the output orientiation matrix
-      . `dim` - the output dimensions
-      . `lam` - the corrected regularisation factor for each contrast).
-    . `in` is a cell of cells of structures with fields:
-      . `dat` - a file array containing the observed data
-      . `mat` - the input orientation matrix
-      . `dim` - the input dimensions
-      . `var` - the observation uncertainty (based on the data type)
-      . `lam` - the estimated noise precision
-      . `mu`  - the estimated mean tissue intensity 
+- `out` is a structure with fields:
+  - `dat` - a file array containing the denoised images
+  - `rls` - a file array containing the L1 weights
+  - `mat` - the output orientiation matrix
+  - `dim` - the output dimensions
+  - `lam` - the corrected regularisation factor for each contrast).
+- `in` is a cell of cells of structures with fields:
+  - `dat` - a file array containing the observed data
+  - `mat` - the input orientation matrix
+  - `dim` - the input dimensions
+  - `var` - the observation uncertainty (based on the data type)
+  - `lam` - the estimated noise precision
+  - `mu`  - the estimated mean tissue intensity 
 (used to corrected the regularisation factors)
-    . If no output argument is asked (`>> r_fit(dat, opt);`), an output 
+- If no output argument is asked (`>> r_fit(dat, opt);`), an output 
   folder is asked for through the GUI and the output images are writen 
   on disk.
 
