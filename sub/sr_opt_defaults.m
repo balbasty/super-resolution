@@ -21,7 +21,7 @@ o = setdefault(o, 'vs',               NaN);              % Reconstruction voxel 
 o = setdefault(o, 'fov',              0);                % Field of view (0=bounding box|n=index of input volume)
 o = setdefault(o, 'coreg.do',         true);             % Co-register volumes first
 o = setdefault(o, 'coreg.fwhm',       [21 14 7]);        % Co-register volumes first
-o = setdefault(o, 'threads',          'automatic');      % Number of threads (automatic|integer)
+o = setdefault(o, 'threads',          'matlab');         % Number of threads (automatic|integer)
 o = setdefault(o, 'verbose',          1);                % Verbosity (0=quiet|[1]=print|2=plot)
 o = setdefault(o, 'input.mat',        eye(4));           % Default orientation matrix
 o = setdefault(o, 'slice.dir',        'thickest');       % Default slice direction (thickest|all)
