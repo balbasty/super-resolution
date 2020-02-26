@@ -85,7 +85,7 @@ Several options are available, as fields of the `opt` structure:
 | `itermax` | int > 0 | 16 | Maximum number of iterations |
 | `tolerance` | float > 0 | 1E-3 | Gain threshold for early stopping |
 | `reg.mode` | 0 / 1 / 2 | 1 | Regularisation mode: 0=None/1=L1/2=L2 |
-| `reg.value` | float > 0 | 1E3 | Regularisation factor per channel |
+| `reg.value` | float > 0 | 1E4 | Regularisation factor per channel |
 | `reg.smo` | float > 0 | 1E-3 | RLS smoothing term |
 | `vs` | float > 0 | NaN | Target voxel size. By default, it is the average input voxel size. |
 | `fov` | int >= 0 | 0 | Target field of view. If 0, an average orientation matrix is computed from the input matrices. If N>0, the orientation matrix of the N-th input image is used. |
