@@ -82,7 +82,10 @@ if nargin == 0 || isempty(in)
         in{c} = num2cell(spm_select(Inf, 'image', msg), 2)';
     end
 end
-
+if nargout == 0
+    opt.out.folder = spm_select(1, 'dir', 'Select output directory...');
+end
+    
 % -------------------------------------------------------------------------
 % Multithread SPM
 [threads0.spm,threads0.matlab] = sr_threads();
@@ -100,11 +103,6 @@ in = sr_in_format(in,opt);
 % . var - observation uncertainty (numeric or file array, usually a scalar)
 % . lam - noise precision
 % . mu  - mean tissue intensity
-
-% DEBUG: LENA
-% in{1}{1}.lam = 1/20^2;
-% in{2}{1}.lam = 1/20^2;
-% in{3}{1}.lam = 1/20^2;
 
 % -------------------------------------------------------------------------
 % Co-registration
@@ -145,10 +143,10 @@ for it=1:opt.itermax
     % ---------------------------------------------------------------------
     % Update maps
     % ---------------------------------------------------------------------
-    g   = zeros([dim K], 'single');            % Gradient
-    H   = zeros([dim K], 'single');            % Hessian
-    llx = 0;                                   % Log-likelihood: data term
-    lly = 0;                                   % Log-likelihood: prior term
+    g    = zeros([dim K], 'single');           % Gradient
+    H    = zeros([dim K], 'single');           % Hessian
+    llx  = 0;                                  % Log-likelihood: data term
+    lly  = 0;                                  % Log-likelihood: prior term
     lltv = 0;                                  % True MTV term
     
     % ---------------------------------------------------------------------
@@ -209,12 +207,6 @@ for it=1:opt.itermax
         end
         if opt.verbose > 0, fprintf('\n'); end
     end
-
-
-    % ---------------------------------------------------------------------
-    % Load diagonal of the Hessian
-    % ---------------------------------------------------------------------
-    H = bsxfun(@plus, H, sum(H,4) * 1E-3);
     
     % ---------------------------------------------------------------------
     % Gauss-Newton
@@ -228,28 +220,37 @@ for it=1:opt.itermax
         % -----------------------------------------------------------------
         % L1 regularisation
         case 1
-            % - Initialise using a majoriser of the true Hessian and the 
-            %   full multigrid solver.
-            %   It captures low frequencies and provides a robust starting
-            %   estimate for the conjugate gradient solver.
-            dy = sr_solve_l1_fmg(H, g, w, vol * out.lam, vs);
-            if any(w(:)~=1)
-            optsolver           = struct;
-            optsolver.verbose   = 1;
-            optsolver.precond   = false;
-            optsolver.tolerance = 0.1;
-            % - Start with conjugate gradient.
-            %   It is fast and quite good when things are still smooth.
-            %   However, it breaks when things become crisper.
-            optsolver.nbiter = 100;
-            optsolver.tolerance = 0.01;
-            dy = sr_solve_l1_cg(H, g, w, vol * out.lam, vs, optsolver, dy);
-            % - Refine with relax.
-            %   It is slow to get the smooth part correct but very
-            %   efficient with crisp edges.
-            optsolver.nbiter = 20;
-            optsolver.tolerance = 0.01;
-            dy = sr_solve_l1_relax(H, g, w, vol * out.lam, vs, optsolver, dy);
+            if sum(opt.solver.fmg) > 0
+                % - Initialise using a majoriser of the true Hessian and  
+                %   the full multigrid solver.
+                %   It captures low frequencies and provides a robust 
+                %   starting estimate for the conjugate gradient solver.
+                optsolver = struct;
+                optsolver.nbcycle = opt.solver.fmg(1);
+                optsolver.nbiter  = opt.solver.fmg(2);
+                dy = sr_solve_l1_fmg(H, g, w, vol * out.lam, vs, optsolver);
+            end
+            if any(w(:)~=1) || sum(opt.fmg) > 0
+                if opt.solver.cg > 0
+                    % - Continue with conjugate gradient.
+                    %   It is fast and generic.
+                    optsolver           = struct;
+                    optsolver.verbose   = 1;
+                    optsolver.precond   = false;
+                    optsolver.tolerance = 0;
+                    optsolver.nbiter    = opt.solver.cg;
+                    dy = sr_solve_l1_cg(H, g, w, vol * out.lam, vs, optsolver, dy);
+                end
+                if opt.solver.relax > 0
+                    % - Refine with relax.
+                    %   It is slow to get the smooth part correct but
+                    %   efficient with crisp edges.
+                    optsolver           = struct;
+                    optsolver.verbose   = 1;
+                    optsolver.tolerance = 0.01;
+                    optsolver.nbiter    = opt.solver.relax;
+                    dy = sr_solve_l1_relax(H, g, w, vol * out.lam, vs, optsolver, dy);
+                end
             end
         % -----------------------------------------------------------------
         % L2 regularisation

@@ -98,11 +98,14 @@ Several options are available, as fields of the `opt` structure:
 | `slice.dir`  | 'thickest' / 'all' | 'thickest' | Which directions are 'slice-selection' directions? |
 | `slice.gap`  | float >= 0 | 1/3 | Gap between slices in the slice direction(s) |
 | `armijo`     | float >= 0 | [2 1] | Series of damping factors used for Gauss-Newton . |
+| `solver.fmg`   | int >= 0 | [2 2] | Number of cycles (1) and relaxation iterations (2) used by the multigrid solver . |
+| `solver.cg`    | int >= 0 | 50    | Number of conjugate gradient iterations . |
+| `solver.relax` | int >= 0 | 0     | Series of relaxation iterations . |
 
 ## References
 
 The use of Multi-Channel Total-Variation as a prior for MR 
-super-resolution has been described in:
+super-resolution is described in:
 
 - **MRI Super-Resolution using Multi-Channel Total Variation.**  
 [Mikael Brudfors](brudfors@gmail.com), [Yaël Balbastre](y.balbastre@ucl.ac.uk), [Parashkev Nachev](p.nachev@ucl.ac.uk), [John Ashburner](j.ashburner@ucl.ac.uk)  
@@ -114,8 +117,12 @@ https://arxiv.org/abs/1810.03422
 Preprint  
 https://arxiv.org/abs/1909.01140
 
-The reweighted least squares scheme used in this implementation will be 
-described soon.
+The reweighted least squares scheme used in this implementation is 
+described in :
+
+- **Joint Total Variation ESTATICS for Robust Multi-Parameter Mapping.**  
+[Yaël Balbastre](y.balbastre@ucl.ac.uk), [Mikael Brudfors](brudfors@gmail.com), [Michela Azzarito](michela.azzarito@balgrist.ch ), [Christian Lambert](christian.lambert@ucl.ac.uk), [Martina F. Callaghan](m.callaghan@ucl.ac.uk), [John Ashburner](j.ashburner@ucl.ac.uk)  
+Preprint  
 
 ## License
 
