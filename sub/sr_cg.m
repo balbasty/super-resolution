@@ -19,9 +19,13 @@ function [x,info] = sr_cg(A,b,x,iM,nit,tol,verbose,sumtype)
 %
 % Note that summing in single is twice as fast as summing in double, but
 % the additional precision is often needed.
-
+%
+% Reminder: CG ensures a monotonic decrease of the *A-norm* of the errors
+% ||Ax-b||_A = (Ax-b)'*A\(Ax-b)
 
 % Adapted from Mikael's cg_im_solver.
+
+DEBUG = false;
 
 if nargin < 3 || isempty(x)
     x       = zeros(size(b),'single');
@@ -46,11 +50,9 @@ sr_plot_interactive('Init', 'Conjugate Gradient', 'Residuals', 'Iteration');
 
 % -------------------------------------------------------------------------
 % Initialisation  
-start = tic;
-time  = [];
 
 bb = sqrt(sum(b(:).^2, sumtype));               % Norm of b: sqrt(b'*b)
-r  = b - A(x); clear b                          % Residual: b - A*x
+r  = b - A(x);                                  % Residual: b - A*x
 z  = iM(r);                                     % Preconditioned residual
 
 rr = sqrt(sum(r(:).^2, sumtype))/bb;            % Norm of r: sqrt(r'*r)
@@ -58,8 +60,15 @@ rz = sum(r(:).*z(:), sumtype);                  % Inner product of r and z
 p     = z;                                      % Initial conjugate directions p
 beta  = 0;                                      % Initial step size
   
+if DEBUG
+    ee   = A(x)-2*b;                            % A-norm of the error
+    ee   = sum(ee(:).*x(:), sumtype);           % (up to a constant)
+    
+    sr_plot_interactive('Set', 0, rr);
+    start = tic;
+    time  = [];
+end
 
-sr_plot_interactive('Set', 0, rr);
 if verbose, fprintf('Conjugate gradient: '); end
 
 % -------------------------------------------------------------------------
@@ -68,7 +77,7 @@ for j=1:nit
     % ---------------------------------------------------------------------
     % Calculate conjugate directions P which defines the direction of descent
     p = z + beta*p;
-    % clear z
+    clear z
 
     % ---------------------------------------------------------------------
     % Finds the step size of the conj. gradient descent
@@ -80,21 +89,22 @@ for j=1:nit
     % calculated P and alpha
     x = x + alpha * p; 
     r = r - alpha * Ap;
-    % clear Ap
+    clear Ap
     
     % ---------------------------------------------------------------------
     % Check convergence
     rr0  = rr(end);
     rr1  = sqrt(sum(r(:).^2, sumtype))/bb;
-    sr_plot_interactive('Set', j, rr1);
     rr   = [rr rr1];
-    time = [time toc(start)];
+    if DEBUG
+        time = [time toc(start)];
+        e1   = A(x)-2*b;
+        e1   = sum(e1(:).*x(:), sumtype);
+        ee   = [ee e1];
+        sr_plot_interactive('Set', j, rr1);
+    end
     if rr1 > rr0
         if verbose, fprintf('x'); end
-%         if rr1 > 1.1*rr0
-%             x   = x - alpha * p;
-%             break
-%         end
     elseif rr1 < tol
         fprintf('o');
         break;
@@ -117,4 +127,7 @@ if verbose, fprintf('\n'); end
 sr_plot_interactive('Clear');
 info.nbiter = j;
 info.rr     = rr;
-info.time   = time;
+if DEBUG
+    info.time   = time;
+    info.ee     = ee;
+end

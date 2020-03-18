@@ -50,6 +50,7 @@ function [x,info] = sr_relax3(A,b,iE,x,opt)
 %       Ashburner, J., 2007. A fast diffeomorphic image registration 
 %       algorithm. Neuroimage, 38(1), pp.95-113.
 
+DEBUG = false;
 
 % -------------------------------------------------------------------------
 % Parse arguments
@@ -69,7 +70,9 @@ if isnumeric(opt.band)
     opt.band = sr_pad(opt.band(:)', [0 3-numel(opt.band)], 'replicate', 'post');
 end
 
-sr_plot_interactive('Init', 'Relaxation', 'Residuals', 'Iteration');
+if DEBUG
+    sr_plot_interactive('Init', 'Relaxation', 'Residuals', 'Iteration');
+end
 
 % -------------------------------------------------------------------------
 % Initial residuals
@@ -84,7 +87,11 @@ if opt.verbose
     fprintf('Relax: ');
 end
 
-sr_plot_interactive('Set', 0, rr);
+if DEBUG
+    ee   = A(x)-2*b;                                % A-norm of the error
+    ee   = sum(ee(:).*x(:), opt.sumtype);           % (up to a constant)
+    sr_plot_interactive('Set', 0, rr);
+end
 
 % -------------------------------------------------------------------------
 % Checkerboard
@@ -113,7 +120,7 @@ for it=1:opt.nbiter
         for j=[0 1]
             sub = (checkerboard == j);
 
-            if false
+            if false % (FASTER BUT NOT EXACT)
             % Compute residuals
             r = reshape(r, [], size(r,4));
             r(sub,:) = b(sub,:) - A(x,sub);
@@ -125,7 +132,7 @@ for it=1:opt.nbiter
             x(sub,:) = x(sub,:) + iE(r,sub);
             x = reshape(x, [dim size(x,2)]);
             
-            if true
+            if true % (SLOWER BUT EXACT)
             % Compute residuals
             r = reshape(b, [dim size(b,2)]) - A(x);
             end
@@ -165,9 +172,14 @@ for it=1:opt.nbiter
     rr0  = rr(end);
     rr1  = sqrt(sum(r(:).^2, opt.sumtype));
     rr1  = rr1/bb;
-    sr_plot_interactive('Set', it, rr1);
     rr   = [rr rr1];
-    time = [time toc(start)];
+    if DEBUG
+        time = [time toc(start)];
+        e1   = reshape(A(x), [], size(b,2))-2*b;
+        e1   = sum(e1(:).*x(:), opt.sumtype);
+        ee   = [ee e1];
+        sr_plot_interactive('Set', it, rr1);
+    end
     if rr1 < opt.tolerance
         if opt.verbose, fprintf('o'); end
         break
@@ -185,4 +197,7 @@ end
 sr_plot_interactive('Clear');
 info.nbiter = it;
 info.rr     = rr;
-info.time   = time;
+if DEBUG
+    info.time   = time;
+    info.ee     = ee;
+end
