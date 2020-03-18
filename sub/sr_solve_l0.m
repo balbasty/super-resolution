@@ -7,4 +7,8 @@ function dy = sr_solve_l0(H,g)
 % d - {nx ny nz nf}         - Step: d = H\g
 
 spm_field('boundary', 1);
-dy = spm_field(H, g);
+
+dy = zeros(size(g), 'single');
+for k=1:size(g,4)
+    dy(:,:,:,k) = spm_field(H(:,:,:,k), g(:,:,:,k));
+end
