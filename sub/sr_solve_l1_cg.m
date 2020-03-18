@@ -1,4 +1,4 @@
-function dy = sr_solve_l1_cg(H, g, w, lam, vs, opt, dy)
+function [dy,info] = sr_solve_l1_cg(H, g, w, lam, vs, opt, dy)
 % Conjugate gradient solver for L1 spatial regularisation.
 %
 % FORMAT d = sr_solve_l1_cg(H, g, w, lam, vs, [opt], [dy0])
@@ -45,9 +45,9 @@ end
 
 % Solve inversion using conjugate-gradient
 iM = @(b) spm_field(H, b, [vs 0 1 0 fmg], lambnd);
-HH = @(b) spm_field('Atimesp', H, b) + prior(b);
+HH = @(b) H.*b + prior(b);
 if opt.precond, precond = iM;
 else,           precond = []; end
-dy = sr_cg(HH, g, dy, precond, opt.nbiter, opt.tolerance, opt.verbose);
+[dy,info] = sr_cg(HH, g, dy, precond, opt.nbiter, opt.tolerance, opt.verbose);
 
 end

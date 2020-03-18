@@ -1,4 +1,4 @@
-function dy = sr_solve_l1_relax(H, g, w, lam, vs, opt, dy)
+function [dy,info] = sr_solve_l1_relax(H, g, w, lam, vs, opt, dy)
 % Relaxation solver for L1 spatial regularisation.
 %
 % FORMAT d = sr_solve_l1_relax(H, g, w, lam, vs, [opt], [d0])
@@ -81,7 +81,7 @@ function x = iE(x,ind)
 end
 
 % Relax
-dy = sr_relax3(@A, g, @iE, dy, opt);
+[dy,info] = sr_relax3(@A, g, @iE, dy, opt);
 
 end
 
