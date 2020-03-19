@@ -42,12 +42,12 @@ You will be asked:
 - **Mode** (*denoising*|*super-resolution*): super-resolution allows 
   MRIs to be upsampled to a finer grid (*i.e.*, smaller voxel size).
   Note that super-resolution *implies* denoising.
-  - **Voxel Size**: Target voxel size (only for *super-resolution*)
+  - **Voxel Size**: Target voxel size (only for *super-resolution*).
   - **Thick slice** (*yes*|*no*): The thick-slice mode can be used for 
     anisotropic acquisitions, with high in-plane and low through-plane 
-    resolution.
+    resolution (only for *super-resolution*).
 - **Regularisation** (*5E3*): Higher = stronger denoising
-- ** Number of iterations** (*10*): Higher = closer to the optimum
+- **Number of iterations** (*10*): Higher = closer to the optimum
 
 You will then be asked to select all input files for each contrast. 
 You can select multiple files (*i.e.*, repeats) for each contrast.
