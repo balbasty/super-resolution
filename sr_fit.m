@@ -70,12 +70,19 @@ if opt.verbose > 1
     spm_figure('GetWin','Interactive');
 end
 if nargin == 0 || isempty(in)
-    Nc   = spm_input('Number of contrasts',1,'n','',1);
+    row = 1;
+    Nc   = spm_input('Number of contrasts',row,'n','',1); row = row+1;
     opt.mode = find(strcmpi(["denoise";"superres"], opt.mode));
-    opt.mode = char(spm_input('Mode',2,'b','denoising|super-resolution',{'denoise';'superres'},opt.mode));
+    opt.mode = char(spm_input('Mode',row,'b','denoising|super-resolution',{'denoise';'superres'},opt.mode)); row = row+1;
     if strcmpi(opt.mode, 'superres')
-        opt.vs = spm_input('Voxel size',3,'r',opt.vs,3);
+        opt.vs = opt.vs(1);
+        opt.vs = spm_input('Voxel size',row,'r',opt.vs,1); row = row+1;
+        opt.vs = opt.vs * ones(1,3);
+        opt.slice.dir = find(strcmpi(["thickest";"all"], opt.slice.dir));
+        opt.slice.dir = char(spm_input('Thick slice',row,'b','yes|no',{'thickest';'all'},opt.slice.dir)); row = row+1;
     end
+    opt.reg.value = spm_input('Regularisation',row,'r',opt.reg.value,1); row = row+1;
+    opt.itermax   = spm_input('Iterations',row,'r',opt.itermax,1); row = row+1;
     in = cell(1,Nc);
     for c=1:Nc
         msg   = sprintf('Select files for contrast %d...',c);
@@ -230,7 +237,7 @@ for it=1:opt.itermax
                 optsolver.nbiter  = opt.solver.fmg(2);
                 dy = sr_solve_l1_fmg(H, g, w, vol * out.lam, vs, optsolver);
             end
-            if any(w(:)~=1) || sum(opt.fmg) > 0
+            if any(w(:)~=1) || sum(opt.solver.fmg) > 0
                 if opt.solver.cg > 0
                     % - Continue with conjugate gradient.
                     %   It is fast and generic.

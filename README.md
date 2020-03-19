@@ -37,12 +37,24 @@ and that you like graphical interfaces, the most simple usage is:
 ```{matlab}
 >> sr_fit;
 ```
-You will be asked the number of different contrasts, the mode you wish
-to use (denoising or super-resolution) and, in the super-resolution case, 
-the target voxel size. Finally, you will then be asked to select all input files, 
-for each contrast, and to choose an output directory. The algorithm will 
-then run and write the results on disk. There will be as many 
-denoised/super-resolved images as contrasts.
+You will be asked:
+- **Number of contrasts**: the number of different MR contrasts (T1w, T2w, ...)
+- **Mode** (*denoising*|*super-resolution*): super-resolution allows 
+  MRIs to be upsampled to a finer grid (*i.e.*, smaller voxel size).
+  Note that super-resolution *implies* denoising.
+  - **Voxel Size**: Target voxel size (only for *super-resolution*)
+  - **Thick slice** (*yes*|*no*): The thick-slice mode can be used for 
+    anisotropic acquisitions, with high in-plane and low through-plane 
+    resolution.
+- **Regularisation** (*5E3*): Higher = stronger denoising
+- ** Number of iterations** (*10*): Higher = closer to the optimum
+
+You will then be asked to select all input files for each contrast. 
+You can select multiple files (*i.e.*, repeats) for each contrast.
+Finally, you will be asked to choose an output directory.
+
+The algorithm will then run and write the results on disk. 
+There will be as many denoised/super-resolved images as contrasts.
 
 ### Command line
 
@@ -108,12 +120,12 @@ The use of Multi-Channel Total-Variation as a prior for MR
 super-resolution is described in:
 
 - **MRI Super-Resolution using Multi-Channel Total Variation.**  
-[Mikael Brudfors](brudfors@gmail.com), [Yaël Balbastre](y.balbastre@ucl.ac.uk), [Parashkev Nachev](p.nachev@ucl.ac.uk), [John Ashburner](j.ashburner@ucl.ac.uk)  
+[Mikael Brudfors](mailto:brudfors@gmail.com), [Yaël Balbastre](mailto:y.balbastre@ucl.ac.uk), [Parashkev Nachev](mailto:p.nachev@ucl.ac.uk), [John Ashburner](mailto:j.ashburner@ucl.ac.uk)  
 MIUA 2019  
 https://arxiv.org/abs/1810.03422
 
 - **A Tool for Super-Resolving Multimodal Clinical MRI.**  
-[Mikael Brudfors](brudfors@gmail.com), [Yaël Balbastre](y.balbastre@ucl.ac.uk), [Parashkev Nachev](p.nachev@ucl.ac.uk), [John Ashburner](j.ashburner@ucl.ac.uk)  
+[Mikael Brudfors](mailto:brudfors@gmail.com), [Yaël Balbastre](mailto:y.balbastre@ucl.ac.uk), [Parashkev Nachev](mailto:p.nachev@ucl.ac.uk), [John Ashburner](mailto:j.ashburner@ucl.ac.uk)  
 Preprint  
 https://arxiv.org/abs/1909.01140
 
@@ -121,7 +133,7 @@ The reweighted least squares scheme used in this implementation is
 described in :
 
 - **Joint Total Variation ESTATICS for Robust Multi-Parameter Mapping.**  
-[Yaël Balbastre](y.balbastre@ucl.ac.uk), [Mikael Brudfors](brudfors@gmail.com), [Michela Azzarito](michela.azzarito@balgrist.ch ), [Christian Lambert](christian.lambert@ucl.ac.uk), [Martina F. Callaghan](m.callaghan@ucl.ac.uk), [John Ashburner](j.ashburner@ucl.ac.uk)  
+[Yaël Balbastre](mailto:y.balbastre@ucl.ac.uk), [Mikael Brudfors](mailto:brudfors@gmail.com), [Michela Azzarito](mailto:michela.azzarito@balgrist.ch ), [Christian Lambert](mailto:christian.lambert@ucl.ac.uk), [Martina F. Callaghan](mailto:m.callaghan@ucl.ac.uk), [John Ashburner](mailto:j.ashburner@ucl.ac.uk)  
 Preprint  
 
 ## License
