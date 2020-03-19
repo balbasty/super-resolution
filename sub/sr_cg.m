@@ -46,7 +46,9 @@ if nargin < 8 || isempty(sumtype) || isnan(sumtype)
     sumtype = 'double';
 end
 
-sr_plot_interactive('Init', 'Conjugate Gradient', 'Residuals', 'Iteration');
+if DEBUG
+    sr_plot_interactive('Init', 'Conjugate Gradient', 'Residuals', 'Iteration');
+end
 
 % -------------------------------------------------------------------------
 % Initialisation  
@@ -103,9 +105,7 @@ for j=1:nit
         ee   = [ee e1];
         sr_plot_interactive('Set', j, rr1);
     end
-    if rr1 > rr0
-        if verbose, fprintf('x'); end
-    elseif rr1 < tol
+    if rr1 < tol
         fprintf('o');
         break;
     elseif verbose
@@ -124,10 +124,10 @@ for j=1:nit
 end
 if verbose, fprintf('\n'); end
 
-sr_plot_interactive('Clear');
 info.nbiter = j;
 info.rr     = rr;
 if DEBUG
     info.time   = time;
     info.ee     = ee;
+    sr_plot_interactive('Clear');
 end

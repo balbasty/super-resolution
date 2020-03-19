@@ -194,10 +194,10 @@ if opt.verbose
     fprintf('\n');
 end
 
-sr_plot_interactive('Clear');
 info.nbiter = it;
 info.rr     = rr;
 if DEBUG
     info.time   = time;
     info.ee     = ee;
+    sr_plot_interactive('Clear');
 end
