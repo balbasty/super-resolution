@@ -26,13 +26,14 @@ try
         end
     end
     delete(refname);
+    rmdir(subtmpdir, 's');
 catch
     rmdir(subtmpdir, 's');
 end
 % =========================================================================
 function dirname = make_dir(dir)
 if ~exist(dir,'dir'), error('Temporary directory %s does not exist', dir); end
-dirname = fullfile(dir, ['spm super-resolution ' datestr(now)]);
+dirname = fullfile(dir, ['spm_super_resolution_' datestr(now,30)]);
 ok = mkdir(dirname);
 if ~ok, error('Could not create temporary directory'); end
 % =========================================================================
