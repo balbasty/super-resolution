@@ -90,7 +90,7 @@ if nargin == 0 || isempty(in)
         in{c} = num2cell(spm_select(Inf, 'image', msg), 2)';
     end
 end
-if nargout == 0
+if nargout == 0 && isempty(opt.out.folder)
     opt.out.folder = spm_select(1, 'dir', 'Select output directory...');
 end
     
