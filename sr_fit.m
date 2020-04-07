@@ -81,7 +81,7 @@ if nargin == 0 || isempty(in)
         opt.slice.dir = find(strcmpi(["thickest";"all"], opt.slice.dir));
         opt.slice.dir = char(spm_input('Thick slice',row,'b','yes|no',{'thickest';'all'},opt.slice.dir)); row = row+1;
     end
-    opt.coreg     = spm_input('Co-register',row,'b','yes|no',[true;false],1+(~opt.coreg)); row = row+1;
+    opt.coreg.do  = spm_input('Co-register',row,'b','yes|no',[true;false],1+(~opt.coreg.do)); row = row+1;
     opt.reg.value = spm_input('Regularisation',row,'r',opt.reg.value,1); row = row+1;
     opt.itermax   = spm_input('Iterations',row,'r',opt.itermax,1); row = row+1;
     in = cell(1,Nc);
