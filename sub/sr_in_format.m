@@ -19,12 +19,34 @@ end
 
 % ------------
 % Estimate SNR
+info = [];
 for k=1:numel(in)
     for r=1:numel(in{k})
-        [s,mu]       = sr_noise_estimate(in{k}{r}.dat);
+        [s,mu,info1] = sr_noise_estimate(in{k}{r}.dat);
         in{k}{r}.lam = 1./s^2;
         in{k}{r}.mu  = mu;
+        if isempty(info)
+            info = info1;
+        else
+            info = horzcat(info, info1);
+        end
     end
+end
+if opt.verbose > 1
+    figname = '[sr] noise estimate';
+    f = findobj('Type', 'Figure', 'Name', figname);
+    if isempty(f)
+        f = figure('Name', figname, 'NumberTitle', 'off');
+    end
+    set(0, 'CurrentFigure', f);   
+    clf(f);
+    for i=1:numel(info)
+        subplot(1,numel(info),i);
+        plot(info(i).x(:),info(i).p,'--',info(i).x(:), ...
+             info(i).h/sum(info(i).h)/info(i).md,'b.', ...
+             info(i).x(:),info(i).sp,'r');
+    end
+    drawnow
 end
 
 % -------------------------------------------------------------------------
