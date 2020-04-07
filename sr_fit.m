@@ -58,6 +58,12 @@ function [out,in] = sr_fit(in,opt)
 % -------------------------------------------------------------------------
 % Add subdirectory to path
 addpath(fullfile(fileparts(which('sr_fit')), 'sub'));
+try
+    spm_dir = spm('dir');
+catch
+    error('SPM12 is not on your path.');
+end
+addpath(fullfile(spm_dir, 'toolbox', 'Longitudinal'));
 
 % -------------------------------------------------------------------------
 % Options
