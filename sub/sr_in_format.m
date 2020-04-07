@@ -109,14 +109,18 @@ end
 if lower(opt.mode(1)) == 's'
     for k=1:numel(out)
         elem = out{k};
-        if strcmpi(opt.slice.dir, 'thickest')
-            vs = sqrt(sum(elem.mat(1:3,1:3).^2));
-            elem.slice.profile = (vs == max(vs));
+        vs = sqrt(sum(elem.mat(1:3,1:3).^2));
+        if any(abs(vs-mean(vs))/mean(vs) > 0.1)
+            isthick = (vs == max(vs));
         else
-            elem.slice.profile = true(1,3);
+            isthick = false(1,3);
         end
-        elem.slice.gap     = zeros(1,3);
-        elem.slice.gap(elem.slice.profile~=0) = opt.slice.gap;
+        elem.slice.profile           = zeros(1,3);
+        elem.slice.profile(isthick)  = opt.slice.thickest;
+        elem.slice.profile(~isthick) = opt.slice.other;
+        elem.slice.gap               = zeros(1,3);
+        elem.slice.gap(isthick)      = opt.slice.gap;
+        elem.slice.accumulate        = opt.slice.accumulate;
         out{k} = elem;
     end
 end
