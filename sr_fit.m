@@ -78,8 +78,12 @@ if nargin == 0 || isempty(in)
         opt.vs = opt.vs(1);
         opt.vs = spm_input('Voxel size',row,'r',opt.vs,1); row = row+1;
         opt.vs = opt.vs * ones(1,3);
-        opt.slice.dir = find(strcmpi(["thickest";"all"], opt.slice.dir));
-        opt.slice.dir = char(spm_input('Thick slice',row,'b','yes|no',{'thickest';'all'},opt.slice.dir)); row = row+1;
+        opt.slice.thickest = find(strcmpi([0 2], opt.slice.thickest));
+        opt.slice.thickest = spm_input('Profile (slice)',row,'b','rect|gauss',[0 2],opt.slice.thickest); row = row+1;
+        opt.slice.other    = find(strcmpi([0 2], opt.slice.other));
+        opt.slice.other    = spm_input('Profile (in plane)',row,'b','rect|gauss',[0 2],opt.slice.other); row = row+1;
+        opt.slice.gap      = spm_input('Slice gap',row,'r',opt.slice.gap,1); row = row+1;
+        opt.slice.accumulate = spm_input('Model',row,'b','integrate|average',[true;false],1+(~opt.slice.accumulate)); row = row+1;
     end
     opt.coreg.do  = spm_input('Co-register',row,'b','yes|no',[true;false],1+(~opt.coreg.do)); row = row+1;
     opt.reg.value = spm_input('Regularisation',row,'r',opt.reg.value,1); row = row+1;

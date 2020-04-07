@@ -62,9 +62,19 @@ end
 out.lam = sr_padarray(opt.reg.value(:)', [0 C-numel(opt.reg.value)], 'replicate', 'post');
 for c=1:C
     % Recon
+    vol    = abs(det(out.mat(1:3,1:3)));
     meanmu = 0;
-    for r=1:numel(in{c}), meanmu = meanmu + in{c}{r}.mu; end
-    meanmu = meanmu/numel(in{c});
+    sumw   = 0;
+    for r=1:numel(in{c})
+        if opt.mode(1) == 's' && opt.slice.accumulate
+            w = abs(det(in{c}{r}.mat(1:3,1:3)))/vol;
+        else
+            w = 1;
+        end
+        meanmu = meanmu + w*in{c}{r}.mu;
+        sumw   = sumw   + w^2;
+    end
+    meanmu = meanmu/sumw;
     if opt.log, meanmu = log(meanmu); end
     out.dat(:,:,:,c) = meanmu;
     if ~opt.log, out.lam(c) = out.lam(c)/abs(meanmu).^2; end

@@ -24,8 +24,10 @@ o = setdefault(o, 'coreg.fwhm',       [21 14 7]);        % List of FWHM to try
 o = setdefault(o, 'threads',          'matlab');         % Number of threads (automatic|integer)
 o = setdefault(o, 'verbose',          1);                % Verbosity (0=quiet|[1]=print|2=plot)
 o = setdefault(o, 'input.mat',        eye(4));           % Default orientation matrix
-o = setdefault(o, 'slice.dir',        'thickest');       % Default slice direction (thickest|all)
+o = setdefault(o, 'slice.thickest',   2);                % Profile for slice direction  (0=rect|2=gauss)
+o = setdefault(o, 'slice.other',      0);                % Profile for other directions (0=rect|2=gauss)
 o = setdefault(o, 'slice.gap',        1/3);              % Default slice gap
+o = setdefault(o, 'slice.accumulate', false);            % Smoothing mode (true=accumulate|false=average)
 o = setdefault(o, 'armijo',           [2 1]);            % Newton-Raphson damping parameter
 o = setdefault(o, 'solver.fmg',       [2 2]);            % Multi-grid
 o = setdefault(o, 'solver.cg',        50);               % Conjugate gradient
