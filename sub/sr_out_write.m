@@ -1,42 +1,36 @@
-function sr_out_write(out, in, opt)
+function out = sr_out_write(out, opt)
 
 C = size(out.dat,4);
+% Recon
 if strcmpi(opt.out.mem, 'load')
-    ndig = num2str(ceil(log10(C+0.5)));
-    
+    dats = cell(1,C);
     for c=1:C
-        dir = opt.out.folder;
-        if isa(in{c}{1}.dat, 'file_array')
-            fname = {in{1}{1}.dat.fname};
-            fname = fname{1};
-            if isempty(opt.out.folder)
-                dir = fileparts(fname);
-            end
-            [~,base] = fileparts(fname);
-            base     = ['_' base];
+        nii      = nifti;
+        nii.dat  = file_array(out.fnames{c}, out.dim, 'float32');
+        nii.mat  = out.mat;
+        nii.mat0 = out.mat;
+        create(nii);
+        if opt.log
+            nii.dat(:,:,:) = exp(out.dat(:,:,:,c));
         else
-            if isempty(opt.out.folder)
-                dir  = '.';
-            end
-            base = '';
+            nii.dat(:,:,:) = out.dat(:,:,:,c);
         end
-        if c == 1, dir1 = dir; end
-        % Recon
-        nii      = nifti;
-        nii.dat  = file_array(fullfile(dir, sprintf(['sr_' '%0' ndig 'd' base '.nii'], c)), out.dim, 'float32');
-        nii.mat  = out.mat;
-        nii.mat0 = out.mat;
-        create(nii);
-        nii.dat(:,:,:) = out.dat(:,:,:,c);
+        dats{c} = nii.dat;
     end
-    
-    % Weights
-    if opt.reg.mode == 1
-        nii      = nifti;
-        nii.dat  = file_array(fullfile(dir1, 'rls.nii'), out.dim, 'float32');
-        nii.mat  = out.mat;
-        nii.mat0 = out.mat;
-        create(nii);
-        out.rls  = nii.dat;
+    out.dat = cat(4, dats{:});
+elseif opt.log
+    for c=1:C
+        out.dat(:,:,:,c) = exp(out.dat(:,:,:,c));
     end
+end
+
+% Weights
+if opt.reg.mode == 1 && strcmpi(opt.out.mem, 'load')
+    nii      = nifti;
+    nii.dat  = file_array(out.fnames{C+1}, out.dim, 'float32');
+    nii.mat  = out.mat;
+    nii.mat0 = out.mat;
+    create(nii);
+    nii.dat(:,:,:) = out.rls(:,:,:);
+    out.rls  = nii.dat;
 end

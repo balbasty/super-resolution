@@ -4,15 +4,46 @@ function in = sr_in_format(in,opt)
 % Convert to cell of contrasts
 in = any2cell(in);
 
+slice = cell(1,numel(in));
+[slice{:}] = deal(struct('thickest',[],'other',[],'gap',[],'accumulate',[]));
+for k=1:numel(in)
+    if iscell(opt.slice.thickest)
+        slice{k}.thickest = opt.slice.thickest{k};
+    else
+        slice{k}.thickest = opt.slice.thickest;
+    end
+    if iscell(opt.slice.other)
+        slice{k}.other = opt.slice.other{k};
+    else
+        slice{k}.other = opt.slice.other;
+    end
+    if iscell(opt.slice.gap)
+        slice{k}.gap = opt.slice.gap{k};
+    else
+        slice{k}.gap = opt.slice.gap;
+    end
+    if iscell(opt.slice.accumulate)
+        slice{k}.accumulate = opt.slice.accumulate{k};
+    else
+        slice{k}.accumulate = opt.slice.accumulate;
+    end
+end
+
 % -----------------------------------------------
 % Convert to cell of repeats and format as struct
 for k=1:numel(in)
     qin  = any2cell(in{k}); % We pop elements from the top of the queue
     qout = {};              % We push elements to the bottom of the queue
     while ~isempty(qin)
-        [elem,qin] = cellpop(qin);              % Pop first element
-        elem       = formatdat(elem, opt);      % Format as (cell of) struct
-        qout       = cellpush(qout, elem);      % Push formatted element
+        i                 = numel(qout)+1;
+        slice1            = slice{k};
+        slice1.thickest   = slice1.thickest(min(numel(slice1.thickest),i));
+        slice1.other      = slice1.other(min(numel(slice1.other),i));
+        slice1.gap        = slice1.gap(min(numel(slice1.gap),i));
+        slice1.accumulate = slice1.accumulate(min(numel(slice1.accumulate),i));
+        [elem,qin] = cellpop(qin);                   % Pop first element
+        elem       = formatdat(elem, opt, slice1);   % Format as (cell of) struct
+        qout       = cellpush(qout, elem);           % Push formatted element
     end
     in{k}  = qout;
 end
@@ -72,7 +103,7 @@ function in = cellpush(in, sub)
 if ~iscell(sub), sub = {sub}; end
 in = [in sub];
 % -------------------------------------------------------------------------
-function out = formatdat(in, opt)
+function out = formatdat(in, opt, slice)
 % Convert filename/nifti/array to (cell of) structure with proper fields.
 if ischar(in) || isstring(in)
     in = nifti(in);
@@ -138,11 +169,11 @@ if lower(opt.mode(1)) == 's'
             isthick = false(1,3);
         end
         elem.slice.profile           = zeros(1,3);
-        elem.slice.profile(isthick)  = opt.slice.thickest;
-        elem.slice.profile(~isthick) = opt.slice.other;
+        elem.slice.profile(isthick)  = slice.thickest;
+        elem.slice.profile(~isthick) = slice.other;
         elem.slice.gap               = zeros(1,3);
-        elem.slice.gap(isthick)      = opt.slice.gap;
-        elem.slice.accumulate        = opt.slice.accumulate;
+        elem.slice.gap(isthick)      = slice.gap;
+        elem.slice.accumulate        = slice.accumulate;
         out{k} = elem;
     end
 end

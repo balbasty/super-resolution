@@ -14,6 +14,7 @@ o = setdefault(o, 'itermax',          10);               % Maximum number of ite
 o = setdefault(o, 'tolerance',        1E-3);             % Gain threshold for early stopping (per scale)
 o = setdefault(o, 'out.folder',       '');               % Output folder [same as input if empty]
 o = setdefault(o, 'out.mem',          'map');            % map/load output volumes
+o = setdefault(o, 'out.prefix',       'sr_');            % Prefix for output files
 o = setdefault(o, 'reg.mode',         1);                % Regularisation mode (0=None|1=L1|2=L2)
 o = setdefault(o, 'reg.value',        5E4);              % Regularisation value (L2: 1/sig^2, L1: 1/b^2)
 o = setdefault(o, 'reg.smo' ,         1E-3);             % RLS smoother

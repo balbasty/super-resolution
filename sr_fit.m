@@ -313,7 +313,7 @@ for it=1:opt.itermax
 
 end
 
-sr_out_write(out, in, opt);
+out = sr_out_write(out, opt);
 
 sr_threads(threads0.spm,    'spm');
 sr_threads(threads0.matlab, 'matlab');
