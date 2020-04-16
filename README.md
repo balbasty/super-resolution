@@ -30,8 +30,21 @@ make external && make external-install
 
 ## Usage
 
+### SPM Batch
+
+If the super-resolution is copied into te `toolbox/` folder of SPM, it
+can be used within the SPM batch system, which can be accessed by clicking 
+the **Batch** Button in the main window. The super-resolution tool can 
+then be loaded from  `SPM > Tools > Denoising / Super-Resolution`.
+
+The top-level field allows the user to chooose between the super-resolution 
+and denoising modes. Most other options are identical between these two 
+modes, but the super-resolution lets the user specify a few more 
+parameters, such as the target voxel-size and the slice profiles.
+
 ### Graphical
 
+The tool can also be run using a small graphical interface outside of SPM.
 Assuming that you have a series of noisy images in nifti format, 
 and that you like graphical interfaces, the most simple usage is:
 ```{matlab}
