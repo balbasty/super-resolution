@@ -33,6 +33,7 @@ o = setdefault(o, 'armijo',           [2 1]);            % Newton-Raphson dampin
 o = setdefault(o, 'solver.fmg',       [2 2]);            % Multi-grid
 o = setdefault(o, 'solver.cg',        50);               % Conjugate gradient
 o = setdefault(o, 'solver.relax',     0);                % Relaxation
+o = setdefault(o, 'precomp_H',        true);             % Precompute AtA(id), faster, but uses more memory
 
 % --- Reformat options
 o.vs = sr_padarray(o.vs(:)', [0 3-numel(o.vs)], 'replicate', 'post');

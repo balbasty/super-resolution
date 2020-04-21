@@ -1,7 +1,8 @@
-function [llx,g,H] = sr_gradient(c, in0, out, opt)
+function [llx,g,H] = sr_gradient(c, in0, out, Ha, opt)
 % FORMAT [llx,g,H] = sr_gradient(in, out, [opt])
 % in  - Input data structure
 % out - Model data structure 
+% Ha  - Approximate Hessian
 % opt - Structure of parameters with [optional] fields:
 %       . subsample - Subsampling distance in mm [Inf=no]
 %       . verbose   - Verbosity level [0]
@@ -58,9 +59,14 @@ for r=1:numel(in0)
         if opt.log, g1 = g1 .* y0; end
         g  = g + lam * g1; clear g1
         if nargout > 2
-            H1 = sr_proj('AtA', ones(ydim, 'single'), xdim, xmat, ymat, opt, slice);
-            if opt.log, H1 = H1 .* y0.^2; end
-            H  = H + lam * H1; clear H1
+            if isempty(Ha{r})
+                Ha = sr_approx_hessian(ydim, xdim, xmat, ymat, opt, slice);            
+                if opt.log, Ha = Ha .* y0.^2; end
+                H  = H + lam * Ha; clear Ha
+            else
+                if opt.log, Ha{r} = Ha{r} .* y0.^2; end
+                H  = H + lam * Ha{r};
+            end
         end
     end
 end
