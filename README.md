@@ -32,7 +32,7 @@ make external && make external-install
 
 ### SPM Batch
 
-If the super-resolution is copied into te `toolbox/` folder of SPM, it
+If the super-resolution is copied into the `toolbox/` folder of SPM, it
 can be used within the SPM batch system, which can be accessed by clicking 
 the **Batch** Button in the main window. The super-resolution tool can 
 then be loaded from  `SPM > Tools > Denoising / Super-Resolution`.
