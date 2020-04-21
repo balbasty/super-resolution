@@ -1,4 +1,4 @@
-function [llx,g,H] = sr_gradient(c, in0, out, Ha, opt)
+function [llx,g,H] = sr_gradient(c, in0, out, opt, Ha)
 % FORMAT [llx,g,H] = sr_gradient(in, out, [opt])
 % in  - Input data structure
 % out - Model data structure 
@@ -9,6 +9,7 @@ function [llx,g,H] = sr_gradient(c, in0, out, Ha, opt)
 
 % -------------------------------------------------------------------------
 % Options
+if nargin < 5, Ha = cell(1, numel(in0)); end
 if nargin < 4, opt = struct; end
 if ~isfield(opt, 'verbose'),   opt.verbose   = 0;     end
 
@@ -23,6 +24,9 @@ if nargout > 1
     g = zeros(ydim, 'single');
     if nargout > 2
         H = zeros(ydim, 'single');
+        if any(cellfun(@isempty, Ha))
+            one = ones(ydim, 'single');
+        end
     end
 end
 
@@ -60,12 +64,15 @@ for r=1:numel(in0)
         g  = g + lam * g1; clear g1
         if nargout > 2
             if isempty(Ha{r})
-                Ha = sr_approx_hessian(ydim, xdim, xmat, ymat, opt, slice);            
+                Ha = sr_proj('AtA', one, xdim, xmat, ymat, opt, slice);        
                 if opt.log, Ha = Ha .* y0.^2; end
                 H  = H + lam * Ha; clear Ha
             else
-                if opt.log, Ha{r} = Ha{r} .* y0.^2; end
-                H  = H + lam * Ha{r};
+                if opt.log
+                    H  = H + lam * Ha{r} .* y0.^2;
+                else
+                    H  = H + lam * Ha{r};
+                end
             end
         end
     end

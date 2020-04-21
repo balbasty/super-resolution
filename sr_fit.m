@@ -126,7 +126,7 @@ in = sr_in_format(in,opt);
 % Co-registration
 if opt.coreg.do
     if opt.verbose > 0, fprintf('Coregister volumes\n'); end
-    in = sr_in_coregister(in,opt.coreg.fwhm);
+    in = sr_in_coregister(in, opt.coreg.fwhm);
 end
 
 % -------------------------------------------------------------------------
@@ -143,18 +143,8 @@ out = sr_out_format(dim, mat, in, opt);
 % . rls   - image of weights (RLS)
 
 % -------------------------------------------------------------------------
-% Precompute AtA(id), faster, but uses more memory
-Ha = cell(1,numel(in));
-for c=1:numel(in) % Loop over contrasts
-    Ha{c} = cell(1, numel(in{c}));        
-    if opt.precomp_H
-        for r=1:numel(in{c}) % Loop over repeats
-            if isfield(in{c}{r}, 'slice'), slice = in{c}{r}.slice; else, slice = []; end
-            Ha{c}{r} = sr_approx_hessian(out.dim, in{c}{r}.dim, in{c}{r}.mat, out.mat, opt, slice);
-        end
-        clear slice
-    end
-end        
+% Precompute AtA(1). Faster, but uses more memory
+Ha = sr_hessian_precomp(in, out.dim, out.mat, opt);
 
 % -------------------------------------------------------------------------
 %
@@ -188,7 +178,7 @@ for it=1:opt.itermax
     for c=1:numel(in) % Loop over contrasts
         
         % - Compute gradient
-        [llx1,g1,H1] = sr_gradient(c, in{c}, out, Ha{c}, opt);
+        [llx1,g1,H1] = sr_gradient(c, in{c}, out, opt, Ha{c});
         llx          = llx + llx1;
 
         % - Add to full gradient
