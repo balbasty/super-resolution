@@ -257,7 +257,7 @@ for it=1:opt.itermax
                     % - Continue with conjugate gradient.
                     %   It is fast and generic.
                     optsolver           = struct;
-                    optsolver.verbose   = 1;
+                    optsolver.verbose   = opt.verbose;
                     optsolver.precond   = false;
                     optsolver.tolerance = 0;
                     optsolver.nbiter    = opt.solver.cg;
@@ -268,7 +268,7 @@ for it=1:opt.itermax
                     %   It is slow to get the smooth part correct but
                     %   efficient with crisp edges.
                     optsolver           = struct;
-                    optsolver.verbose   = 1;
+                    optsolver.verbose   = opt.verbose;
                     optsolver.tolerance = 0.01;
                     optsolver.nbiter    = opt.solver.relax;
                     dy = sr_solve_l1_relax(H, g, w, vol * out.lam, vs, optsolver, dy);
