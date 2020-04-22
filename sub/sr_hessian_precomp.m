@@ -2,7 +2,7 @@ function Ha = sr_hessian_precomp(in, odim, omat, opt)
 
 Ha = cellfun(@(x) cell(1,numel(x)), in, 'UniformOutput', false);
 if opt.precomp_H
-    one = ones(odim, 'single')
+    one = ones(odim, 'single');
     for c=1:numel(in) % Loop over contrasts
         for r=1:numel(in{c}) % Loop over repeats
             if isfield(in{c}{r}, 'slice'), slice = in{c}{r}.slice; 
