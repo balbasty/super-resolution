@@ -64,9 +64,9 @@ for r=1:numel(in0)
         g  = g + lam * g1; clear g1
         if nargout > 2
             if isempty(Ha{r})
-                Ha = sr_proj('AtA', one, xdim, xmat, ymat, opt, slice);        
-                if opt.log, Ha = Ha .* y0.^2; end
-                H  = H + lam * Ha; clear Ha
+                H1 = sr_proj('AtA', one, xdim, xmat, ymat, opt, slice);        
+                if opt.log, H1 = H1 .* y0.^2; end
+                H  = H + lam * H1; clear H1
             else
                 if opt.log
                     H  = H + lam * Ha{r} .* y0.^2;
