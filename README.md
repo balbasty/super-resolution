@@ -147,7 +147,8 @@ described in :
 
 - **Joint Total Variation ESTATICS for Robust Multi-Parameter Mapping.**  
 [Yaël Balbastre](mailto:y.balbastre@ucl.ac.uk), [Mikael Brudfors](mailto:brudfors@gmail.com), [Michela Azzarito](mailto:michela.azzarito@balgrist.ch ), [Christian Lambert](mailto:christian.lambert@ucl.ac.uk), [Martina F. Callaghan](mailto:m.callaghan@ucl.ac.uk), [John Ashburner](mailto:j.ashburner@ucl.ac.uk)  
-Preprint  
+MICCAI 2020  
+https://arxiv.org/abs/2005.14247
 
 ## License
 
