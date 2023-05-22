@@ -37,7 +37,6 @@ end
 % - Estimate noise
 noise  = zeros(N,1);
 mu_val = zeros(N,1);
-info   = struct('x',[],'h',[],'p',[],'sp',[],'md',[]);
 n      = 0;
 for i=1:numel(Scans)
     if isa(Scans{i}, 'file_array')
@@ -50,7 +49,11 @@ for i=1:numel(Scans)
     for k=1:size(Scans{i}, 4)
         n = n + 1;
         f = Scans{i}(:,:,:,k);
-        [noise(n), mu_val(n), info(n)] = estimate_noise_1(f, K, inttype, slope, getmu);
+        if (n == 1)
+            [noise(n), mu_val(n), info] = estimate_noise_1(f, K, inttype, slope, getmu);
+        else
+            [noise(n), mu_val(n), info(n)] = estimate_noise_1(f, K, inttype, slope, getmu);
+        end
     end
 end
 
