@@ -9,12 +9,10 @@ repeats of a same contrast.
 
 ## Dependencies
 
-This code is written in Matlab and depends on the **development branch**
+This code is written in Matlab and depends on the 
+[**development branch**](https://github.com/spm/spm)
 of the [SPM12](https://www.fil.ion.ucl.ac.uk/spm/) software, which 
-should be on your Matlab path. Access to this branch is usually 
-restricted to people who work at the 
-[FIL](https://www.fil.ion.ucl.ac.uk/spm/local/). If you don't but would 
-like to try this software, please send us an email to get a copy.
+should be on your Matlab path. 
 
 For increased speed, it is advised to recompile SPM with OpenMP 
 activated. This can be done by following 
